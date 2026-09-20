@@ -49,7 +49,10 @@ BEGIN
       :NEW.id_ticket,
       CASE WHEN INSERTING THEN NULL ELSE :OLD.estado END,
       :NEW.estado,
-      NVL(SYS_CONTEXT('APEX$SESSION','APP_USER'), USER),
+      -- Usuario que ejecuta el cambio. USER funciona en cualquier contexto
+      -- (SQL Workshop o app APEX). Si querés registrar el usuario logueado de
+      -- APEX, podés usar V('APP_USER') desde un proceso de página en su lugar.
+      USER,
       SYSDATE
     );
   END IF;
