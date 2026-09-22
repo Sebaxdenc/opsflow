@@ -42,9 +42,8 @@ opsflow/
 │   └── 04_tests/                  ← pruebas de la lógica de negocio
 ├── docs/
 │   ├── 01_alcance_y_diseno.md     ← alcance, ER, diccionario de datos
-│   ├── 02_guia_apex.md            ← guía paso a paso para armar la app
-│   ├── 03_casos_de_prueba.md      ← QA: casos unitarios y funcionales
-│   ├── 04_decisiones_tecnicas.md  ← por qué de cada decisión
+│   ├── 02_casos_de_prueba.md      ← QA: casos unitarios y funcionales
+│   ├── 03_decisiones_tecnicas.md  ← por qué de cada decisión
 │   └── capturas/                  ← screenshots de la app
 └── apex/                          ← export de la app APEX (.sql)
 ```
@@ -65,3 +64,41 @@ Cinco entidades: `OPS_CATEGORIA`, `OPS_PRIORIDAD`, `OPS_AGENTE`, `OPS_TICKET` y
 `Oracle APEX` · `Oracle Database 19c+` · `SQL` · `PL/SQL`
 
 ---
+
+## Vistazo a la aplicación
+
+### Dashboard de métricas
+Panel con KPIs (tickets abiertos, % de cumplimiento de SLA, tiempo promedio de resolución)
+y gráficos de tickets por prioridad y carga por agente.
+
+![Dashboard de OpsFlow](docs/capturas/dashboard.png)
+
+### Gestión de solicitudes
+Reporte interactivo con filtros, orden y exportación. Los tickets **vencidos** se resaltan
+automáticamente mediante formato condicional.
+
+![Reporte de solicitudes](docs/capturas/solicitudes.png)
+
+### Detalle de solicitud
+Formulario de alta/edición con botones **Resolver** y **Cerrar** que invocan la lógica de
+negocio en PL/SQL (cálculo de SLA y auditoría automática de estados).
+
+![Formulario de ticket](docs/capturas/formulario_ticket.png)
+
+### Mantenimiento de catálogos
+Edición en línea (Interactive Grid) de categorías, prioridades y agentes.
+
+![Catálogo de categorías](docs/capturas/categorias.png)
+
+---
+
+## → Puesta en marcha
+
+**Opción A — Importar la app completa (más rápido):**
+1. Creá un workspace gratuito en [apex.oracle.com](https://apex.oracle.com).
+2. Ejecutá los scripts de `database/` en orden (o `install_all.sql`) para crear el esquema y los datos.
+3. En **App Builder → Import**, subí `apex/f182929.sql` para restaurar la aplicación.
+
+**Opción B — Solo la base de datos:**
+En **SQL Workshop → SQL Scripts**, ejecutá los archivos de `database/` en orden y verificá con
+`SELECT * FROM vw_dashboard_kpi;`.
