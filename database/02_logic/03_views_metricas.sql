@@ -3,9 +3,6 @@
 --
 -- Una VIEW es una consulta guardada con nombre. En APEX apuntás una región/gráfico
 -- a la vista y listo: la lógica compleja queda en la base, no en la interfaz.
---
--- Analogía Power Apps: parecido a una "vista" curada de tu tabla, pero acá podés
--- meter joins, agregaciones y cálculos que Power Apps no maneja tan cómodo.
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------

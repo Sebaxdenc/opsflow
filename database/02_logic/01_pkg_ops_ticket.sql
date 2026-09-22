@@ -4,9 +4,6 @@
 -- Un PACKAGE en PL/SQL = una "librería" con dos partes:
 --   * SPEC (especificación): lo público, la "firma" de lo que se puede llamar.
 --   * BODY (cuerpo): la implementación.
---
--- Analogía Power Apps: sería como agrupar tus fórmulas/flows reutilizables en un
--- único componente, pero acá vive en la base de datos y lo llama cualquier página.
 --------------------------------------------------------------------------------
 
 CREATE OR REPLACE PACKAGE pkg_ops_ticket AS

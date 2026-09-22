@@ -4,9 +4,6 @@
 -- Un TRIGGER es código que la base ejecuta AUTOMÁTICAMENTE ante un evento
 -- (INSERT/UPDATE/DELETE). Nadie lo "llama": se dispara solo.
 --
--- Analogía Power Apps: es como un Power Automate que corre "cuando se crea o
--- modifica un registro", pero garantizado a nivel de base de datos (no se puede
--- saltear desde la interfaz).
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -41,20 +38,20 @@ CREATE OR REPLACE TRIGGER trg_ticket_historial_aiu
 AFTER INSERT OR UPDATE OF estado ON ops_ticket
 FOR EACH ROW
 BEGIN
-  -- En INSERT no hay estado anterior; en UPDATE solo auditamos si cambió.
   IF INSERTING OR (:OLD.estado <> :NEW.estado) THEN
     INSERT INTO ops_ticket_historial (
       id_ticket, estado_anterior, estado_nuevo, usuario, fecha_cambio
     ) VALUES (
       :NEW.id_ticket,
-      CASE WHEN INSERTING THEN NULL ELSE :OLD.estado END,
+      :OLD.estado,     -- en INSERT vale NULL automáticamente
       :NEW.estado,
-      NVL(SYS_CONTEXT('APEX$SESSION','APP_USER'), USER),
+      USER,
       SYSDATE
     );
   END IF;
 END;
 /
+
 
 PROMPT ============================================================
 PROMPT  OpsFlow: triggers de OPS_TICKET creados.

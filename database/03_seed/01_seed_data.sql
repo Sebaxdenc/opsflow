@@ -35,35 +35,42 @@ INSERT INTO ops_agente (nombre, email) VALUES ('Marta Ruiz',   'marta.ruiz@opsfl
 
 --------------------------------------------------------------------------------
 -- Tickets
--- Usamos variables de bind con SELECT para no depender de IDs fijos.
 -- Insertamos con fechas variadas para simular historia real.
 --------------------------------------------------------------------------------
 DECLARE
-  -- Helpers para obtener IDs por nombre (más legible que hardcodear).
-  FUNCTION cat(p VARCHAR2) RETURN NUMBER IS r NUMBER; BEGIN
-    SELECT id_categoria INTO r FROM ops_categoria WHERE nombre = p; RETURN r; END;
-  FUNCTION pri(p VARCHAR2) RETURN NUMBER IS r NUMBER; BEGIN
-    SELECT id_prioridad INTO r FROM ops_prioridad WHERE nombre = p; RETURN r; END;
-  FUNCTION age(p VARCHAR2) RETURN NUMBER IS r NUMBER; BEGIN
-    SELECT id_agente INTO r FROM ops_agente WHERE nombre = p; RETURN r; END;
 
-  -- Inserta un ticket con control fino de fechas y estado (para el demo).
+  -- Inserta un ticket resolviendo los IDs por nombre DENTRO del procedimiento
+  -- (con SELECT ... INTO) y usando variables en el INSERT.
   PROCEDURE mk (
-    p_cat VARCHAR2, p_pri VARCHAR2, p_age VARCHAR2, p_titulo VARCHAR2,
-    p_dias_atras NUMBER,          -- hace cuántos días se creó
-    p_estado VARCHAR2,
+    p_cat         VARCHAR2,
+    p_pri         VARCHAR2,
+    p_age         VARCHAR2,          -- nombre del agente, o NULL si sin asignar
+    p_titulo      VARCHAR2,
+    p_dias_atras  NUMBER,            -- hace cuántos días se creó
+    p_estado      VARCHAR2,
     p_horas_resol NUMBER DEFAULT NULL  -- horas que tardó en resolverse (si aplica)
   ) IS
-    v_id     NUMBER;
-    v_fcreac DATE := SYSDATE - p_dias_atras;
+    v_id       NUMBER;
+    v_id_cat   NUMBER;
+    v_id_pri   NUMBER;
+    v_id_age   NUMBER;
+    v_fcreac   DATE := SYSDATE - p_dias_atras;
   BEGIN
+    -- Resolver IDs por nombre (esto es SQL válido: SELECT ... INTO variable).
+    SELECT id_categoria INTO v_id_cat FROM ops_categoria WHERE nombre = p_cat;
+    SELECT id_prioridad INTO v_id_pri FROM ops_prioridad WHERE nombre = p_pri;
+ 
+    IF p_age IS NULL THEN
+      v_id_age := NULL;
+    ELSE
+      SELECT id_agente INTO v_id_age FROM ops_agente WHERE nombre = p_age;
+    END IF;
+ 
+    -- Alta del ticket. El trigger calcula fecha_limite segun la prioridad.
     INSERT INTO ops_ticket (id_categoria, id_prioridad, id_agente, titulo,
                             estado, fecha_creacion)
-    VALUES (cat(p_cat), pri(p_pri),
-            CASE WHEN p_age IS NULL THEN NULL ELSE age(p_age) END,
-            p_titulo, 'NUEVO', v_fcreac)
+    VALUES (v_id_cat, v_id_pri, v_id_age, p_titulo, 'NUEVO', v_fcreac)
     RETURNING id_ticket INTO v_id;
-    -- El trigger ya calculó fecha_limite en base a la prioridad y fecha_creacion.
 
     IF p_estado = 'EN_PROCESO' THEN
       UPDATE ops_ticket SET estado = 'EN_PROCESO' WHERE id_ticket = v_id;
@@ -78,10 +85,10 @@ DECLARE
         UPDATE ops_ticket SET estado = 'CERRADO' WHERE id_ticket = v_id;
       END IF;
     END IF;
-  END;
+  END mk;
 BEGIN
   -- Abiertos (algunos vencidos por ser antiguos con SLA corto)
-  mk('Redes',        'Critica', 'Ana Torres', 'Caída de enlace principal',        0.1, 'EN_PROCESO');
+  mk('Redes',        'Critica', 'Ana Torres', 'Caida de enlace principal',        0.1, 'EN_PROCESO');
   mk('Aplicaciones', 'Alta',    'Luis Prado', 'ERP no permite facturar',          0.3, 'EN_PROCESO');
   mk('Accesos',      'Media',   NULL,         'Alta de usuario nuevo',            0.5, 'NUEVO');
   mk('Hardware',     'Baja',    'Marta Ruiz', 'Cambio de teclado',                1.0, 'NUEVO');
@@ -89,14 +96,14 @@ BEGIN
   mk('Aplicaciones', 'Critica', 'Luis Prado', 'Error 500 en portal clientes',     0.5, 'NUEVO');      -- vencido
 
   -- Resueltos a tiempo (cumplieron SLA)
-  mk('Accesos',      'Media',   'Marta Ruiz', 'Reset de contraseña',              3,   'RESUELTO', 2);
-  mk('Hardware',     'Baja',    'Ana Torres', 'Instalación de impresora',         5,   'RESUELTO', 20);
-  mk('Redes',        'Alta',    'Luis Prado', 'Configuración de VPN',             4,   'RESUELTO', 6);
+  mk('Accesos',      'Media',   'Marta Ruiz', 'Reset de contrasena',              3,   'RESUELTO', 2);
+  mk('Hardware',     'Baja',    'Ana Torres', 'Instalacion de impresora',         5,   'RESUELTO', 20);
+  mk('Redes',        'Alta',    'Luis Prado', 'Configuracion de VPN',             4,   'RESUELTO', 6);
   mk('Aplicaciones', 'Media',   'Marta Ruiz', 'Reporte de ventas no exporta',     6,   'CERRADO', 10);
 
   -- Resueltos tarde (incumplieron SLA)
-  mk('Redes',        'Critica', 'Ana Torres', 'Firewall bloquea tráfico legítimo',7,   'RESUELTO', 12);
-  mk('Aplicaciones', 'Alta',    'Luis Prado', 'Lentitud en módulo de inventario', 8,   'CERRADO', 30);
+  mk('Redes',        'Critica', 'Ana Torres', 'Firewall bloquea trafico legitimo',7,   'RESUELTO', 12);
+  mk('Aplicaciones', 'Alta',    'Luis Prado', 'Lentitud en modulo de inventario', 8,   'CERRADO', 30);
 
   COMMIT;
 END;

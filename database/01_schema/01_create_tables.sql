@@ -5,7 +5,6 @@
 -- Convenciones:
 --   * Prefijo OPS_ para todas las tablas del proyecto.
 --   * PK con IDENTITY (auto-incremental nativo de Oracle 12c+).
---     -> Equivale al "Id" autogenerado que te da Dataverse en Power Apps.
 --   * CHAR(1) 'S'/'N' para flags booleanos (patrón habitual en Oracle).
 --
 -- Idempotente: podés re-ejecutar el script; primero elimina los objetos si existen.

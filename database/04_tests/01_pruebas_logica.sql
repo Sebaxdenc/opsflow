@@ -4,8 +4,6 @@
 -- No es un framework formal (utPLSQL), sino un script legible que valida las
 -- reglas clave. Cada bloque imprime OK/FALLO por consola (SET SERVEROUTPUT ON).
 --
--- En el rol te pedirán "casos de prueba unitarios y funcionales": este archivo,
--- junto con docs/04_casos_de_prueba.md, cubre esa competencia.
 --------------------------------------------------------------------------------
 SET SERVEROUTPUT ON
 
